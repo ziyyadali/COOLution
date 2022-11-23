@@ -1,0 +1,187 @@
+import numpy as np
+import sys
+import abc
+
+class Prior(abc.ABC):
+    """
+    Abstract base class for prior objects.
+    All prior objects should inherit from this class.
+    """
+
+    is_correlated = False
+    @abc.abstractmethod
+    def draw_samples(self, num_samples):
+        pass
+
+    @abc.abstractmethod
+    def compute_lnprob(self, element_array):
+        pass
+class GaussianPrior(Prior):
+    """Gaussian prior.
+    .. math::
+        log(p(x|\\sigma, \\mu)) \\propto \\frac{(x - \\mu)}{\\sigma}
+    Args:
+        mu (float): mean of the distribution
+        sigma (float): standard deviation of the distribution
+        no_negatives (bool): if True, only positive values will be drawn from
+            this prior, and the probability of negative values will be 0 (default:True).
+    (written) Sarah Blunt, 2018
+    """
+
+    def __init__(self, mu, sigma, no_negatives=True):
+        self.mu = mu
+        self.sigma = sigma
+        self.no_negatives = no_negatives
+
+    def __repr__(self):
+        return "Gaussian"
+
+    def draw_samples(self, num_samples):
+        """
+        Draw positive samples from a Gaussian distribution.
+        Negative samples will not be returned.
+        Args:
+            num_samples (float): the number of samples to generate
+        Returns:
+            numpy array of float: samples drawn from the appropriate
+            Gaussian distribution. Array has length `num_samples`.
+        """
+
+        samples = np.random.normal(
+            loc=self.mu, scale=self.sigma, size=num_samples
+        )
+        bad = np.inf
+
+        if self.no_negatives:
+
+            while bad != 0:
+
+                bad_samples = np.where(samples < 0)[0]
+                bad = len(bad_samples)
+
+                samples[bad_samples] = np.random.normal(
+                    loc=self.mu, scale=self.sigma, size=bad
+                )
+
+        return samples
+
+    def compute_lnprob(self, element):
+        """
+        Compute log(probability) of an array of numbers wrt a Gaussian distibution.
+        Negative numbers return a probability of -inf.
+        Args:
+            element (float): We want the probability of drawing element from a
+            Gaussian distribution
+        Returns:
+            float: log(probability) of element value.
+        """
+        lnprob = -0.5*np.log(2.*np.pi*self.sigma) - 0.5*((element - self.mu) / self.sigma)**2
+
+        if self.no_negatives and (lnprob < 0):
+            return -np.inf
+        
+        return lnprob
+
+
+class LogUniformPrior(Prior):
+    """
+    This is the probability distribution :math:`p(x) \\propto 1/x`
+    The __init__ method should take in a "min" and "max" value
+    of the distribution, which correspond to the domain of the prior.
+    (If this is not implemented, the prior has a singularity at 0 and infinite
+    integrated probability).
+    Args:
+        minval (float): the lower bound of this distribution
+        maxval (float): the upper bound of this distribution
+    """
+
+    def __init__(self, minval, maxval):
+        self.minval = minval
+        self.maxval = maxval
+
+        self.logmin = np.log(minval)
+        self.logmax = np.log(maxval)
+
+    def __repr__(self):
+        return "Log Uniform"
+
+    def draw_samples(self, num_samples):
+        """
+        Draw samples from this 1/x distribution.
+        Args:
+            num_samples (float): the number of samples to generate
+        Returns:
+            np.array:  samples ranging from [``minval``, ``maxval``) as floats.
+        """
+        # sample from a uniform distribution in log space
+        samples = np.random.uniform(self.logmin, self.logmax, num_samples)
+
+        # convert from log space to linear space
+        samples = np.exp(samples)
+
+        return samples
+
+    def compute_lnprob(self, element):
+        """
+        Compute the prior probability of element given that its drawn from a Log-Uniofrm  prior
+        Args:
+            element (float): value compute the prior probability of
+        Returns:
+            float: Log Uniform probability of drawing element
+        """
+        normalizer = self.logmax - self.logmin
+
+        lnprob = -np.log((element*normalizer))
+
+        # account for scalar inputs
+        if (element > self.maxval) or (element< self.minval):
+            return -np.inf
+
+        return lnprob
+
+
+class UniformPrior(Prior):
+    """
+    This is the probability distribution p(x) propto constant.
+    Args:
+        minval (float): the lower bound of the uniform prior
+        maxval (float): the upper bound of the uniform prior
+    """
+
+    def __init__(self, minval, maxval):
+        self.minval = minval
+        self.maxval = maxval
+
+    def __repr__(self):
+        return "Uniform"
+
+    def draw_samples(self, num_samples):
+        """
+        Draw samples from this uniform distribution.
+        Args:
+            num_samples (float): the number of samples to generate
+        Returns:
+            np.array:  samples ranging from [0, pi) as floats.
+        """
+        # sample from a uniform distribution in log space
+        samples = np.random.uniform(self.minval, self.maxval, num_samples)
+
+        return samples
+
+    def compute_lnprob(self, element):
+        """
+        Compute the prior probability of element given that its drawn from this uniform prior
+        Args:
+            element (float): value  of the element to compute the prior probability of
+        Returns:
+            float: value of prior probability
+        """
+        lnprob = np.log(np.ones(np.size(element))/(self.maxval - self.minval))
+
+        # account for scalar inputs
+        if (element > self.maxval) or (element < self.minval):
+            lnprob = -np.inf
+
+        return lnprob
+
+
