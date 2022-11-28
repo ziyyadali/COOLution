@@ -101,8 +101,7 @@ class MCMCSampler():
 
             # convert posterior probability (returned by sampler objects) to likelihood (required by src.results.Results)
             for i, orb in enumerate(self.post):
-                # TODO: remove orbitize and add a all_lnpriors function
-                self.lnlikes[i] -= orbitize.priors.all_lnpriors(orb, self.priors)
+                self.lnlikes[i] -= priors.all_lnpriors(orb, self.priors)
 
         # include fixed parameters in posterior
         #TODO: Add in a  fill_in_fixed_params
@@ -132,9 +131,8 @@ class MCMCSampler():
 
         with Pool(processes=self.num_threads) as pool: 
             if self.use_pt:
-                #TODO: change the all_lnpriors
                 sampler = ptemcee.Sampler(
-                    self.num_walkers, self.num_params, self._logl, orbitize.priors.all_lnpriors,
+                    self.num_walkers, self.num_params, self._logl, priors.all_lnpriors,
                     ntemps=self.num_temps, threads=self.num_threads, logpargs=[self.priors, ]
                 )
             else:
