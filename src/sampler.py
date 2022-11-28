@@ -18,12 +18,12 @@ class MCMCSampler():
         system (System): a System object.
         num_temps (int): number of temperatures to run the sampler. 
             Parallel tempering will be used if num_temps > 1 (default=20)
-        num_walkers (int): number of walkers at each temperature (default=1000)
+        num_walkers (int): number of walkers at each temperature (default=200)
         num_threads (int): number of threads to use for parallelization (default=1)
     Written: Ziyyad Ali, 2022
     """
 
-    def __init__(self, system, num_temps=20, num_walkers=1000, num_threads=1) -> None:
+    def __init__(self, system, num_temps=20, num_walkers=200, num_threads=1) -> None:
         # Set the constructor attributes
         self.system = system
         self.num_temps = num_temps
@@ -31,7 +31,9 @@ class MCMCSampler():
         self.num_threads = num_threads
 
         # Create a results object
-        # TODO: Create self.results
+        #TODO: Create self.results
+
+        #TODO: self.model_table = model.maketable(table_type='WD')
 
         # Set the parallel tempering attributes
         if self.num_temps > 1:
@@ -60,7 +62,7 @@ class MCMCSampler():
         else:
             self.curr_pos = np.stack(init_pos).T
         
-    def _logl(self, params):
+    def _logl(self, params, include_logp=False):
         """
         A log likelihood function that will compute the sum of the log likelihoods
         
@@ -71,7 +73,24 @@ class MCMCSampler():
         Returns:
             lnlikes (float): sum of all the log likelihoods
         """
-        pass
+        if include_logp:
+            logp = priors.all_lnpriors(params, self.priors)
+            # escape if logp == -np.inf
+            if np.isinf(logp):
+                return -np.inf
+
+        else:
+            logp = 0  # don't include prior
+
+        filts = self.system.datatable["Filter"]
+        data = self.system.datatable["App Mag"]
+        errors = self.system.datatable["Mag Error"]
+
+        #TODO: model = model.wd_model(params, filts) #not a class
+        
+        #TODO: logl = chi_squared function
+
+        return logl + logp
 
     def _update_chains_from_sampler(self, sampler, num_steps=None):
         """
@@ -103,9 +122,6 @@ class MCMCSampler():
             for i, orb in enumerate(self.post):
                 self.lnlikes[i] -= priors.all_lnpriors(orb, self.priors)
 
-        # include fixed parameters in posterior
-        #TODO: Add in a  fill_in_fixed_params
-        self.post = self._fill_in_fixed_params(self.post)
     
     def run_sampler(self, num_steps:int, burn_steps:int, thin:int, output_filename:str):
         """
@@ -151,10 +167,6 @@ class MCMCSampler():
                 if (i+1) % 5 == 0:
                     print(str(i+1)+'/'+str(burn_steps)+' steps of burn-in complete', end='\r')
 
-                if (i+1) % thin == 0: # we've completed i+1 steps
-                    self.results.curr_pos = self.curr_pos
-                    self.results.save_results(output_filename)
-
             sampler.reset()
             print('')
             print('Burn in complete. Sampling posterior now.')
@@ -170,46 +182,9 @@ class MCMCSampler():
                 if (i+1) % 5 == 0:
                     print(str(i+1)+'/'+str(num_steps)+' steps completed', end='\r')
 
-                if (i+1) % thin == 0: # we've completed i+1 steps
-                    self._update_chains_from_sampler(sampler, num_steps=i+1)
-
-                    # figure out what is the new chunk of the chain and corresponding lnlikes that have been computed before last save
-                    # grab the current posterior and lnlikes and reshape them to have the Nwalkers x num_steps dimension again
-                    post_shape = self.post.shape
-                    curr_chain_shape = (self.num_walkers, post_shape[0]//self.num_walkers, post_shape[-1])
-                    curr_chain = self.post.reshape(curr_chain_shape)
-                    curr_lnlike_chain = self.lnlikes.reshape(curr_chain_shape[:2])
-                    # use the reshaped arrays and find the new steps we computed
-                    curr_chunk = curr_chain[:, saved_upto:i+1]
-                    curr_chunk = curr_chunk.reshape(-1, curr_chunk.shape[-1]) # flatten nwalkers x num_steps dim
-                    curr_lnlike_chunk = curr_lnlike_chain[:, saved_upto:i+1].flatten()
-
-                    # add this current chunk to the results object (which already has all the previous chunks saved)
-                    self.results.add_samples(curr_chunk, curr_lnlike_chunk, 
-                                                curr_pos=self.curr_pos)
-                    self.results.save_results(output_filename)
-                    saved_upto = i+1
-
             print('')
             self._update_chains_from_sampler(sampler)
-
-            """if periodic_save_freq is None:
-                # need to save everything
-                self.results.add_samples(self.post, self.lnlikes, curr_pos=self.curr_pos)"""
-
-            if saved_upto < num_steps:
-                # just need to save the last few
-                # same code as above except we just need to grab the last few
-                post_shape = self.post.shape
-                curr_chain_shape = (self.num_walkers, post_shape[0]//self.num_walkers, post_shape[-1])
-                curr_chain = self.post.reshape(curr_chain_shape)
-                curr_lnlike_chain = self.lnlikes.reshape(curr_chain_shape[:2])
-                curr_chunk = curr_chain[:, saved_upto:]
-                curr_chunk = curr_chunk.reshape(-1, curr_chunk.shape[-1]) # flatten nwalkers x num_steps dim
-                curr_lnlike_chunk = curr_lnlike_chain[:, saved_upto:].flatten()
-
-                self.results.add_samples(curr_chunk, curr_lnlike_chunk, 
-                                                     curr_pos=self.curr_pos)
+            self.results.add_samples(self.post, self.lnlikes, curr_pos=self.curr_pos)
 
             if output_filename is not None:
                 self.results.save_results(output_filename)
@@ -331,6 +306,7 @@ class MCMCSampler():
             version_number = orbitize.__version__,
             curr_pos = self.curr_pos
         )
+        #TODO: results.savefile()
 
         # Print a confirmation
         print('Chains successfully chopped. Results object updated.')
