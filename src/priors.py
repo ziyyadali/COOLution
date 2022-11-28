@@ -1,11 +1,14 @@
 import numpy as np
-import sys
 import abc
+
+"""
+Note: All classes were derived from Orbitize! priors.py written by Sarah Blunt
+"""
 
 class Prior(abc.ABC):
     """
     Abstract base class for prior objects.
-    All prior objects should inherit from this class.
+    All prior objects inherits from this class.
     """
 
     is_correlated = False
@@ -16,6 +19,7 @@ class Prior(abc.ABC):
     @abc.abstractmethod
     def compute_lnprob(self, element_array):
         pass
+
 class GaussianPrior(Prior):
     """Gaussian prior.
     .. math::
@@ -24,8 +28,8 @@ class GaussianPrior(Prior):
         mu (float): mean of the distribution
         sigma (float): standard deviation of the distribution
         no_negatives (bool): if True, only positive values will be drawn from
-            this prior, and the probability of negative values will be 0 (default:True).
-    (written) Sarah Blunt, 2018
+                            this prior, and the probability of negative values
+                            will be 0 (default:True).
     """
 
     def __init__(self, mu, sigma, no_negatives=True):
@@ -55,27 +59,24 @@ class GaussianPrior(Prior):
         if self.no_negatives:
 
             while bad != 0:
-
                 bad_samples = np.where(samples < 0)[0]
                 bad = len(bad_samples)
 
-                samples[bad_samples] = np.random.normal(
-                    loc=self.mu, scale=self.sigma, size=bad
-                )
+                samples[bad_samples] = np.random.normal(loc=self.mu, scale=self.sigma, size=bad)
 
         return samples
 
-    def compute_lnprob(self, element):
+    def compute_lnprob(self, param):
         """
         Compute log(probability) of an array of numbers wrt a Gaussian distibution.
         Negative numbers return a probability of -inf.
         Args:
-            element (float): We want the probability of drawing element from a
-            Gaussian distribution
+            param (float): A parameter in which the probability would be calculated from
+                           a Gaussian distribution
         Returns:
-            float: log(probability) of element value.
+            float: log(probability) of param value.
         """
-        lnprob = -0.5*np.log(2.*np.pi*self.sigma) - 0.5*((element - self.mu) / self.sigma)**2
+        lnprob = -0.5*np.log(2.*np.pi*self.sigma) - 0.5*((param - self.mu) / self.sigma)**2
 
         if self.no_negatives and (lnprob < 0):
             return -np.inf
@@ -121,20 +122,19 @@ class LogUniformPrior(Prior):
 
         return samples
 
-    def compute_lnprob(self, element):
+    def compute_lnprob(self, param):
         """
         Compute the prior probability of element given that its drawn from a Log-Uniofrm  prior
         Args:
-            element (float): value compute the prior probability of
+            param (float): value compute the prior probability of from a Log Uniform distribution
         Returns:
-            float: Log Uniform probability of drawing element
+            float: Log Uniform probability of drawing param
         """
         normalizer = self.logmax - self.logmin
 
-        lnprob = -np.log((element*normalizer))
+        lnprob = -np.log((param*normalizer))
 
-        # account for scalar inputs
-        if (element > self.maxval) or (element< self.minval):
+        if (param > self.maxval) or (param< self.minval):
             return -np.inf
 
         return lnprob
@@ -168,18 +168,19 @@ class UniformPrior(Prior):
 
         return samples
 
-    def compute_lnprob(self, element):
+    def compute_lnprob(self, param):
         """
         Compute the prior probability of element given that its drawn from this uniform prior
         Args:
-            element (float): value  of the element to compute the prior probability of
+            param (float): value  of the element to compute the prior probability of from a 
+                           uniform distribution
         Returns:
-            float: value of prior probability
+            float: the log probability of param
         """
-        lnprob = np.log(np.ones(np.size(element))/(self.maxval - self.minval))
+        lnprob = np.log(1/(self.maxval - self.minval))
 
         # account for scalar inputs
-        if (element > self.maxval) or (element < self.minval):
+        if (param > self.maxval) or (param < self.minval):
             lnprob = -np.inf
 
         return lnprob
