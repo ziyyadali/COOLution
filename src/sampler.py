@@ -6,6 +6,7 @@ from multiprocessing import Pool
 import priors
 import results
 import system
+import model
 
 import matplotlib.pyplot as plt
 
@@ -23,7 +24,7 @@ class MCMCSampler():
     Written: Ziyyad Ali, 2022
     """
 
-    def __init__(self, system, num_temps=20, num_walkers=200, num_threads=1) -> None:
+    def __init__(self, system, num_temps=20, num_walkers=200, num_threads=1, table_type=None, filters=None) -> None:
         # Set the constructor attributes
         self.system = system
         self.num_temps = num_temps
@@ -33,7 +34,7 @@ class MCMCSampler():
         # Create a results object
         #TODO: Create self.results
 
-        #TODO: self.model_table = model.maketable(table_type='WD')
+        self.model_table = model.maketable(table_type, filters)
 
         # Set the parallel tempering attributes
         if self.num_temps > 1:
@@ -86,9 +87,9 @@ class MCMCSampler():
         data = self.system.datatable["App Mag"]
         errors = self.system.datatable["Mag Error"]
 
-        #TODO: model = model.wd_model(params, filts) #not a class
+        model = model.findMags(self.model_table, solarm, age, filts) #not a class
         
-        #TODO: logl = chi_squared function
+        logl = model.chi_squared(model, data, errors)
 
         return logl + logp
 
