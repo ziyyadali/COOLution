@@ -87,7 +87,7 @@ class MCMCSampler():
         data = self.system.datatable["App Mag"]
         errors = self.system.datatable["Mag Error"]
 
-        model = model.findMags(self.model_table, solarm, age, filts) #not a class
+        model = model.findMags(self.model_table, solarm, age, parallax, filts) #solarm, age and parallax will come from params
         
         logl = model.chi_squared(model, data, errors)
 

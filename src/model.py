@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
 
-def _make_master_df(filters):
+def _make_master_dfWD(filters):
     """
     Makes the master dataframe for all masses ranging from 0.2 to 1.1 
     solar masses.
@@ -27,7 +27,7 @@ def _make_master_df(filters):
         mdf = pd.concat([mdf, mdf1])
     return mdf
 
-def _make_mass_df(mass, filters):
+def _make_mass_dfWD(mass, filters):
     """
     Makes the master dataframe for a specific mass with the specified
     filters.
@@ -56,9 +56,9 @@ def maketable(ttype, filters=None):
     White dwarf cooling models are returned.
     """
     if ttype == 'WD':
-        return _make_master_df(filters=filters)
+        return _make_master_dfWD(filters=filters)
 
-def findMags(mdf, solar_m, age, filters):
+def findMags(mdf, solar_m, age, parallax, filters):
     """
     Given the solar mass in a range of 0.2 to 1.1 inclusively, interpolate
     linearly from the upper and lower bounds (from the white dwarf cooling 
@@ -66,6 +66,7 @@ def findMags(mdf, solar_m, age, filters):
     Parameters:
         - mdf:         DataFrame -> the master dataframe containing the WD Cooling Models
         - solar_m:     float     -> must be rounded to the nearest tenth decimal
+        - parallax:    float     -> parallax in milliarcseconds
         - filters:     [String]  -> a list containing the filters as strings.
         - age:         [float]   -> the estimated age of the white dwarf
         
@@ -90,14 +91,16 @@ def findMags(mdf, solar_m, age, filters):
         # For each filter, the upper and lower bounds of the dataframe is found with respect to the filter value
         for i in range(len(filters)):
             #print(filters[i])
-            sub = df["Age"]-age
-            age_upper = df.loc[[df.loc[sub > 0, "Age"].idxmin()]][[filters[i], 'Age']]
-            age_lower = df.loc[[df.loc[sub < 0, "Age"].idxmax()]][[filters[i], 'Age']]
-            age_bounds = pd.concat([age_upper, age_lower]).values
+            #sub = df["Age"]-age
+            #age_upper = df.loc[[df.loc[sub > 0, "Age"].idxmin()]][[filters[i], 'Age']]
+            #age_lower = df.loc[[df.loc[sub < 0, "Age"].idxmax()]][[filters[i], 'Age']]
+            #age_bounds = pd.concat([age_upper, age_lower]).values
             #print("Age bounds:\n", age_bounds)
 
             # y = f(x) (y would be magnitude, x is the age)
-            f = interp1d(age_bounds[:,1:].flatten(), age_bounds[:,:-1].flatten())
+            #f = interp1d(age_bounds[:,1:].flatten(), age_bounds[:,:-1].flatten())
+            f = interp1d(df["Age"], df[filters[i]])
+
             
             # Add the magnitude in the bound array in the order of the filter array ie. elm 0 is filt 0's magnitude
             mags[m][i] = f(age)
@@ -110,7 +113,11 @@ def findMags(mdf, solar_m, age, filters):
     #print("Plus:\n", plus)
     fmags = mags[0] + plus
     
-    return fmags
+    # Change to apparent magnitude
+    dist = 1/(parallax/1000)
+    app_fmags = 5*np.log10(dist/10) + fmags
+    
+    return app_fmags
 
 def chi_squared(model, mags, errors):
     residual = (mags - model)
