@@ -185,4 +185,19 @@ class UniformPrior(Prior):
 
         return lnprob
 
+def all_lnpriors(params, priors):
+    """
+    Calculates log(prior probability) of a set of parameters and a list of priors
+    Args:
+        params (np.array): size of N parameters
+        priors (list): list of N prior objects corresponding to each parameter
+    Returns:
+        float: prior probability of this set of parameters
+    """
+    logp = 0.
 
+    for param, prior in zip(params, priors):
+    
+        logp += prior.compute_lnprob(param)  # return a float
+
+    return logp
