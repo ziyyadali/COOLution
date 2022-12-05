@@ -88,7 +88,7 @@ class MCMCSampler():
         data = self.system.datatable["App Mag"]
         errors = self.system.datatable["Mag Error"]
 
-        model = model.findMags(self.model_table, solarm, age, parallax, filts) #solarm, age and parallax will come from params
+        model = model.findMags(self.model_table, params[:,0], params[:,1], params[:,2], filts)
         
         logl = model.chi_squared(model, data, errors)
 
@@ -269,6 +269,7 @@ class MCMCSampler():
         (written): Henry Ngo, 2019
         TODO: Compare to ours which stores a file, which might be something we want
         """
+        raise NotImplementedError("function not yet adapted")
 
         # Retrieve information from results object
         flatchain = np.copy(self.results.post)
