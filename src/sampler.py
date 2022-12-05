@@ -15,12 +15,13 @@ class MCMCSampler():
     A MCMC (Markov chain Monte Carlo) sampler that supports parallel tempering in
     addition to simple MCMC.
 
-    Args:
+    Attributes:
         system (System): a System object.
         num_temps (int): number of temperatures to run the sampler. 
             Parallel tempering will be used if num_temps > 1 (default=20)
         num_walkers (int): number of walkers at each temperature (default=200)
         num_threads (int): number of threads to use for parallelization (default=1)
+
     Written: Ziyyad Ali, 2022
     """
 
