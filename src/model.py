@@ -13,7 +13,7 @@ def _make_master_dfWD(filters):
         A DataFrame of the filters, age and mass
     """
     #
-    files = ['Models\Montreal_Models\Table_Mass_{:.1f}'.format(m) for m in np.arange(0.2, 1.2, 0.1)]
+    files = ['Models\Montreal_Models\Table_Mass_{:.1f}.txt'.format(m) for m in np.arange(0.2, 1.2, 0.1)]
 
     mdf = pd.DataFrame()
 
@@ -39,7 +39,7 @@ def _make_mass_dfWD(mass, filters):
     Returns:
         A DataFrame of the filters, age and mass
     """
-    file = 'Models\Montreal_Models\Table_Mass_{:.1f}'.format(mass)
+    file = 'Models\Montreal_Models\Table_Mass_{:.1f}.txt'.format(mass)
 
     mdf1 = pd.read_csv(file, header=1, usecols=filters+['Age'], delim_whitespace=True)
     # Remove Helium data
@@ -76,17 +76,17 @@ def findMags(mdf, solar_m, age, parallax, filters):
     
     # Make array to hold magnitudes. Elm 0 is are the interp values for the lowerbound; Elm 1 is the upper.
     mags = np.zeros((2,len(filters)))
+
     # TODO: Check age limits for dataframes
+
     
     # Makes the bounds and ensures floats have one decimal (avoiding floating point errors)
     mbounds = (np.around(np.floor(10*solar_m)/10, decimals=1), np.around(np.floor(10*solar_m)/10 + 0.1, decimals=1))
-    #print("Mass bounds:\n", mbounds)
     
     # Outer loop runs twice only
     for m in range(len(mbounds)):
         # Make sub dataframe for specific mass
         df = mdf.loc[mdf["Mass"] == mbounds[m]]
-        #print("\nSpecific Mass dataframe:\n", df)
         
         # For each filter, the upper and lower bounds of the dataframe is found with respect to the filter value
         for i in range(len(filters)):
@@ -104,13 +104,10 @@ def findMags(mdf, solar_m, age, parallax, filters):
             
             # Add the magnitude in the bound array in the order of the filter array ie. elm 0 is filt 0's magnitude
             mags[m][i] = f(age)
-            #print("Current mags:\n", mags)
     
     # Calculates the magnitude for the age given 
     fract = (solar_m - mbounds[0])/(mbounds[1]-mbounds[0])
-    #print("Fract val:\n", fract)
     plus = fract * (mags[1]-mags[0])
-    #print("Plus:\n", plus)
     fmags = mags[0] + plus
     
     # Change to apparent magnitude
@@ -120,7 +117,22 @@ def findMags(mdf, solar_m, age, parallax, filters):
     return app_fmags
 
 def chi_squared(model, mags, errors):
+    """
+    Calculates the chi_squared value for between the current model and the data
+    and its errors. 
+    Paramaters:
+        - model:    numpy array -> The apprarent magnitudes in the order of the filters
+        - mags:     numpy array -> The expected magnitudes
+        - errors:   numpy array -> Errors of the expected magnitudes
+        
+    Returns:
+        - The chi-squared value of the magnutides in each filter
+    """
     residual = (mags - model)
     sigma2 = errors**2
     chi2 = -0.5 * residual**2 / sigma2 - np.log(np.sqrt(2*np.pi*sigma2))
     return chi2
+
+
+
+
