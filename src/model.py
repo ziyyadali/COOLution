@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
 
+
 def _make_master_dfWD(filters):
     """
     Makes the master dataframe for all masses ranging from 0.2 to 1.1 
@@ -13,7 +14,7 @@ def _make_master_dfWD(filters):
         A DataFrame of the filters, age and mass
     """
     #
-    files = ['Models\Montreal_Models\Table_Mass_{:.1f}.txt'.format(m) for m in np.arange(0.2, 1.2, 0.1)]
+    files = ['Models\Montreal_Models\Table_Mass_{:.1f}'.format(m) for m in np.arange(0.2, 1.2, 0.1)]
 
     mdf = pd.DataFrame()
 
@@ -22,7 +23,7 @@ def _make_master_dfWD(filters):
         # Remove Helium data
         rw = np.where(mdf1['Age'] == 'NUV')[0][0]
         lr = len(mdf1)-1
-        mdf1.insert(3, "Mass", float(file[-3:]))
+        mdf1.insert(len(mdf1.columns), "Mass", float(file[-3:]))
         mdf1 = mdf1[:rw-1].astype(float)
         mdf = pd.concat([mdf, mdf1])
     return mdf
@@ -39,7 +40,7 @@ def _make_mass_dfWD(mass, filters):
     Returns:
         A DataFrame of the filters, age and mass
     """
-    file = 'Models\Montreal_Models\Table_Mass_{:.1f}.txt'.format(mass)
+    file = 'Models\Montreal_Models\Table_Mass_{:.1f}'.format(mass) 
 
     mdf1 = pd.read_csv(file, header=1, usecols=filters+['Age'], delim_whitespace=True)
     # Remove Helium data
@@ -124,7 +125,7 @@ def chi_squared(model, mags, errors):
         - model:    numpy array -> The apprarent magnitudes in the order of the filters
         - mags:     numpy array -> The expected magnitudes
         - errors:   numpy array -> Errors of the expected magnitudes
-        
+
     Returns:
         - The chi-squared value of the magnutides in each filter
     """
@@ -134,5 +135,7 @@ def chi_squared(model, mags, errors):
     return chi2
 
 
-
+if __name__ == '__main__':
+    mdf = maketable('WD', filters=["K"])
+    print(mdf["K"].to_list())
 
