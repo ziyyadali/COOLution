@@ -74,9 +74,11 @@ def findMags(mdf, solar_m, age, parallax, filters):
     Returns:
         - The estimated magnitude for the each filter in the order of filters
     """
-    # Basic age range check
+    # Basic age range check and filter checks
     if (age < 0) or (age > 1.564e10):
         raise ValueError("Invalid value for age parameter")
+    if (not filters) or (not(set(filters) <= set(mdf.columns.tolist()))):
+        raise ValueError("Filters array must be a subset of the filters in master dataframe")
     
     # Make array to hold magnitudes. Elm 0 is are the interp values for the lowerbound; Elm 1 is the upper.
     mags = np.zeros((2,len(filters)))
@@ -96,17 +98,7 @@ def findMags(mdf, solar_m, age, parallax, filters):
         # For each filter, the upper and lower bounds of the dataframe is found with respect to the filter value
         for i in range(len(filters)):
             #print(filters[i])
-            #sub = df["Age"]-age
-            #age_upper = df.loc[[df.loc[sub > 0, "Age"].idxmin()]][[filters[i], 'Age']]
-            #age_lower = df.loc[[df.loc[sub < 0, "Age"].idxmax()]][[filters[i], 'Age']]
-            #age_bounds = pd.concat([age_upper, age_lower]).values
-            #print("Age bounds:\n", age_bounds)
-
-            # y = f(x) (y would be magnitude, x is the age)
-            #f = interp1d(age_bounds[:,1:].flatten(), age_bounds[:,:-1].flatten())
             f = interp1d(df["Age"], df[filters[i]])
-
-            
             # Add the magnitude in the bound array in the order of the filter array ie. elm 0 is filt 0's magnitude
             mags[m][i] = f(age)
     
@@ -141,3 +133,6 @@ def chi_squared(model, mags, errors):
 
 
 
+if __name__ == '__main__':
+    mdf = maketable("WD", filters=["K", "H"])
+    print(set(["K", "H"]) <= set(mdf.columns.tolist()))
