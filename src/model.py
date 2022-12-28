@@ -74,15 +74,19 @@ def findMags(mdf, solar_m, age, parallax, filters):
     Returns:
         - The estimated magnitude for the each filter in the order of filters
     """
+    # Basic age range check
+    if (age < 0) or (age > 1.564e10):
+        raise ValueError("Invalid value for age parameter")
     
     # Make array to hold magnitudes. Elm 0 is are the interp values for the lowerbound; Elm 1 is the upper.
     mags = np.zeros((2,len(filters)))
-
-    # TODO: Check age limits for dataframes
-
     
     # Makes the bounds and ensures floats have one decimal (avoiding floating point errors)
     mbounds = (np.around(np.floor(10*solar_m)/10, decimals=1), np.around(np.floor(10*solar_m)/10 + 0.1, decimals=1))
+
+    # Checks the solar mass range
+    if (mbounds[1] > 1.2) or (mbounds[0] < 0.2):
+        raise ValueError("Solar mass input creates invalid bounds")
     
     # Outer loop runs twice only
     for m in range(len(mbounds)):
@@ -135,7 +139,5 @@ def chi_squared(model, mags, errors):
     return chi2
 
 
-if __name__ == '__main__':
-    mdf = maketable('WD', filters=["K"])
-    print(mdf["K"].to_list())
+
 
