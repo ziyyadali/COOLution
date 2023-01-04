@@ -22,7 +22,7 @@ import numpy as np
 import datetime
 import priors
 
-class Structure():
+class System():
     """
     The structure class will contain the data along with the priors used in the 
     MCMC sampler. 

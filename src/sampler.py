@@ -33,7 +33,7 @@ class MCMCSampler():
         self.num_threads = num_threads
 
         # Create a results object
-        #TODO: Create self.results
+        self.results = results.Results(self.system)
 
         self.model_table = model.maketable(table_type, filters)
 
@@ -213,7 +213,6 @@ class MCMCSampler():
         Returns:
             List of ``matplotlib.pyplot.Figure`` objects:
                 Walker position plot for each parameter selected
-        (written): Henry Ngo, 2019
         """
 
         # Get the flattened chain from Results object (nwalkers*nsteps, nparams)
@@ -253,8 +252,6 @@ class MCMCSampler():
             if step_range is not None:  # Limit range shown if step_range is set
                 ax.set_xlim(step_range)
             output_figs.append(fig)
-
-        # Return
         return output_figs
 
     def chop_chains(self, burn, trim=0):
