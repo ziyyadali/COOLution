@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 from scipy.stats import norm as nm
-
 import src.priors as priors
 
 threshold = 1e-1
@@ -19,15 +18,50 @@ expected_means_mins_maxes = {
 }
 
 lnprob_inputs = {
-	priors.GaussianPrior : np.array([-3.0, np.inf, 1000., 999.]),
-	priors.LogUniformPrior : np.array([-1., 0., 1., 1.5, 2., 2.5]),
-	priors.UniformPrior : np.array([0., 0.5, 1., -1., 2.]),
+	priors.GaussianPrior : -3.0,
+	priors.GaussianPrior : np.inf,
+	priors.GaussianPrior : 1000.,
+	priors.GaussianPrior : 999.,
+	priors.LogUniformPrior : -1.,
+	priors.LogUniformPrior : 0.,
+	priors.LogUniformPrior : 1.,
+	priors.LogUniformPrior : 1.5, 
+	priors.LogUniformPrior : 2., 
+	priors.LogUniformPrior : 2.5,
+	priors.UniformPrior : 0., 
+	priors.UniformPrior : 0.5,
+	priors.UniformPrior : 1., 
+	priors.UniformPrior : -1.,
+	priors.UniformPrior : 2.
 }
 
+
 expected_probs = {
-	priors.GaussianPrior : np.array([0., 0., nm(1000.,1.).pdf(1000.), nm(1000.,1.).pdf(999.)]),
+	priors.GaussianPrior : 0.,
+	priors.GaussianPrior : 0.,
+	priors.GaussianPrior : -np.inf,
+	priors.GaussianPrior : -np.inf,
+	priors.LogUniformPrior : 0./np.log(2),
+	priors.LogUniformPrior : 0./np.log(2),
+	priors.LogUniformPrior : 1./np.log(2),
+	priors.LogUniformPrior : 2./3./np.log(2), 
+	priors.LogUniformPrior : 0.5/np.log(2), 
+	priors.LogUniformPrior : 0/np.log(2),
+	priors.UniformPrior : 1., 
+	priors.UniformPrior : 1.,
+	priors.UniformPrior : 1., 
+	priors.UniformPrior : 0.,
+	priors.UniformPrior : 0.
+}
+lnprob_inputs2 = {
+	priors.GaussianPrior : np.array([-3.0, np.inf, 1000., 999.]), #
+	priors.LogUniformPrior : np.array([-1., 0., 1., 1.5, 2., 2.5]),
+	priors.UniformPrior : np.array([0., 0.5, 1., -1., 2.])
+}
+expected_probs2 = {
+	priors.GaussianPrior : np.array([0., 0., nm(1000.,1.).pdf(1000.), nm(1000.,1.).pdf(999.)]), #
 	priors.LogUniformPrior : np.array([0., 0., 1., 2./3., 0.5, 0.])/np.log(2),
-	priors.UniformPrior : np.array([1., 1., 1., 0., 0.]),
+	priors.UniformPrior : np.array([1., 1., 1., 0., 0.])
 }
 
 
@@ -52,19 +86,17 @@ def test_compute_lnprob():
 	"""
 	for Prior in initialization_inputs.keys():
 		inputs = initialization_inputs[Prior]
-
 		TestPrior = Prior(*inputs)
-		values2test = lnprob_inputs[Prior]
-
-        #lnprobs = []
-        #for val in values2test:
-        #    lnprobs.append(TestPrior.compute_lnprob(val))
-
-		lnprobs = TestPrior.compute_lnprob(values2test)
-
-		assert np.log(expected_probs[Prior]) == pytest.approx(lnprobs, abs=threshold)
+		values2test = lnprob_inputs2[Prior]
+		
+		for i in range(len(values2test)):
+			lnprobs = TestPrior.compute_lnprob(values2test[i])
+			if (str(TestPrior) == 'Gaussian') and (np.log(expected_probs2[Prior][i]) < 0):
+				assert -np.inf == pytest.approx(lnprobs, abs=threshold)
+			else:
+				assert np.log(expected_probs2[Prior][i]) == pytest.approx(lnprobs, abs=threshold)
 
 
 if __name__=='__main__':
-	#test_compute_lnprob()
+	test_compute_lnprob()
 	test_draw_samples()
