@@ -38,7 +38,7 @@ class GaussianPrior(Prior):
         self.no_negatives = no_negatives
 
     def __repr__(self):
-        return "Gaussian"
+        return f'GaussianPrior(mu={self.mu}, sigma={self.sigma}, no_negatives={self.no_negatives})'
 
     def draw_samples(self, num_samples):
         """
@@ -104,7 +104,7 @@ class LogUniformPrior(Prior):
         self.logmax = np.log(maxval)
 
     def __repr__(self):
-        return "Log Uniform"
+        return f'LogUniformPrior(minval={self.minval}, maxval={self.maxval})'
 
     def draw_samples(self, num_samples):
         """
@@ -153,7 +153,7 @@ class UniformPrior(Prior):
         self.maxval = maxval
 
     def __repr__(self):
-        return "Uniform"
+        return f'UniformPrior(minval={self.minval}, maxval={self.maxval})'
 
     def draw_samples(self, num_samples):
         """

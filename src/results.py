@@ -1,4 +1,6 @@
 import numpy as np
+import h5py
+import os
 
 class Results():
     """
@@ -49,10 +51,12 @@ class Results():
     
     def save_results(self, filename):
         """
-        Saves the results object to a ___ file
+        Saves the results object to a h5py file
         """
-        raise NotImplementedError("Saving is not yet ready")
         hf = h5py.File(filename, 'w')  # Creates h5py file object
+
+        # Add the system object
+        hf.create_dataset('system', data=self.system.save_format())
 
         # Now add post and lnlike from the results object as datasets
         hf.create_dataset('post', data=self.post)

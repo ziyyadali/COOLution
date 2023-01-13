@@ -69,13 +69,18 @@ class System():
         """
         raise NotImplementedError("Update priors is not yet completed")
     
-    def save(self):
+    def save_format(self, hf):
         """
         Transforms the attributes of the System object in a format so
         Results can save the data.
 
-        Returns:
-            TODO
+        Args:
+            hf (h5py._hl.files.File): a currently open hdf5 file in which
+                to save the object.  
         """
-        raise NotImplementedError("Save functionality not completed")
+        hf.create_dataset('data', data=self.data_table)
+        hf.attrs['plx'] = self.plx
+        hf.attrs['plx_err'] = self.plx_err
+        for i in range(3):
+            hf.attrs[f"Prior({self.labels[i]})"] = str(self.priors[i])
     

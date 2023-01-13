@@ -187,9 +187,7 @@ class MCMCSampler():
             print('')
             self._update_chains_from_sampler(sampler)
             self.results.add_samples(self.post, self.lnlikes, curr_pos=self.curr_pos)
-
-            if output_filename is not None:
-                self.results.save_results(output_filename)
+            self.results.save_results(output_filename)
 
             print('Run complete')
         # Close pool
