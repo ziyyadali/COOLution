@@ -18,12 +18,12 @@ expected_means_mins_maxes = {
 }
 
 lnprob_inputs = {
-	priors.GaussianPrior : np.array([-3.0, np.inf, 1000., 999.]), #
+	priors.GaussianPrior : np.array([-3.0, np.inf, 1000., 999.]), 
 	priors.LogUniformPrior : np.array([-1., 0., 1., 1.5, 2., 2.5]),
 	priors.UniformPrior : np.array([0., 0.5, 1., -1., 2.])
 }
 expected_probs = {
-	priors.GaussianPrior : np.array([0., 0., nm(1000.,1.).pdf(1000.), nm(1000.,1.).pdf(999.)]), #
+	priors.GaussianPrior : np.array([0., 0., nm(1000.,1.).pdf(1000.), nm(1000.,1.).pdf(999.)]), 
 	priors.LogUniformPrior : np.array([0., 0., 1., 2./3., 0.5, 0.])/np.log(2),
 	priors.UniformPrior : np.array([1., 1., 1., 0., 0.])
 }
@@ -55,7 +55,7 @@ def test_compute_lnprob():
 		
 		for i in range(len(values2test)):
 			lnprobs = TestPrior.compute_lnprob(values2test[i])
-			if (str(TestPrior) == 'Gaussian') and (np.log(expected_probs[Prior][i]) < 0):
+			if ('Gaussian' in str(TestPrior)) and (np.log(expected_probs[Prior][i]) < 0):
 				assert -np.inf == pytest.approx(lnprobs, abs=threshold)
 			else:
 				assert np.log(expected_probs[Prior][i]) == pytest.approx(lnprobs, abs=threshold)
