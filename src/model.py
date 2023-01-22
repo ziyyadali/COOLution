@@ -77,7 +77,7 @@ def findMags(mdf, solar_m, age, parallax, filters):
     # Basic age range check and filter checks
     if (age < 0) or (age > 1.564e10):
         raise ValueError("Invalid value for age parameter")
-    if (not filters) or (not(set(filters) <= set(mdf.columns.tolist()))):
+    if (not filters) or (not(set(filters) <= set(mdf.columns.tolist()))): #might have a problem with repeating filter measurements
         raise ValueError("Filters array must be a subset of the filters in master dataframe")
     
     # Make array to hold magnitudes. Elm 0 is are the interp values for the lowerbound; Elm 1 is the upper.

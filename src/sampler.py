@@ -3,10 +3,10 @@ import emcee
 import ptemcee
 import multiprocessing as mp
 from multiprocessing import Pool
-import priors
-import results
-import system
-import model
+import src.priors as priors
+import src.results as results
+import src.system as sys
+import src.model as model
 
 import matplotlib.pyplot as plt
 
@@ -45,7 +45,7 @@ class MCMCSampler():
             self.num_temps = 1
         
         # Set the list of priors
-        self.priors = self.system.priors
+        self.priors = self.system.sys_priors
 
         # Initialize the walker positions
         self.num_params = len(self.priors)
@@ -84,14 +84,15 @@ class MCMCSampler():
         else:
             logp = 0  # don't include prior
 
-        filts = self.system.datatable["Filter"]
-        data = self.system.datatable["App Mag"]
-        errors = self.system.datatable["Mag Error"]
+        filts = self.system.data_table["Filter"].to_list()
+        data = self.system.data_table["App Mag"].to_numpy()
+        errors = self.system.data_table["Errors"].to_numpy()
+        print(params, filts)
 
-        model = model.findMags(self.model_table, params[:,0], params[:,1], params[:,2], filts)
+        modelr = model.findMags(self.model_table, params[0], params[1], params[2], filts)
+        print(modelr)
+        logl = model.chi_squared(modelr, data, errors)
         
-        logl = model.chi_squared(model, data, errors)
-
         return logl + logp
 
     def _update_chains_from_sampler(self, sampler, num_steps=None):

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import datetime
-import priors
+import src.priors as priors
 
 class System():
     """
@@ -38,8 +38,8 @@ class System():
         self.plx_err = plx_err
         self.keyword = keyword
 
-        if (keyword != 'informative') or (keyword != 'uninformative'):
-            raise ValueError("keyword must be 'informative' or 'uninformative'")
+        #if (keyword != 'informative') or (keyword != 'uninformative'):
+        #    raise ValueError("keyword must be 'informative' or 'uninformative'")
 
         # Create list of priors
         self.labels = ['mass', 'age', 'plx']
