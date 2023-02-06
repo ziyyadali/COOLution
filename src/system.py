@@ -44,14 +44,15 @@ class System():
         # Create list of priors
         self.labels = ['mass', 'age', 'plx']
         if self.keyword == 'informative':
-            self.sys_priors = [priors.LogUniformPrior(0.2, 1.3), 
-                               priors.UniformPrior(0, 1.418e10), 
+            self.sys_priors = [priors.UniformPrior(0.2, 1.3), 
+                               priors.UniformPrior(0.0, 1.564e10), 
                                priors.GaussianPrior(self.plx, self.plx_err)]
         else:
             # Puts a uniform prior on all paramaters, puts a 10*sigma range on either side of values
             self.sys_priors = [priors.UniformPrior(0.2, 1.3), 
-                               priors.UniformPrior(0, 1.418e10), 
+                               priors.UniformPrior(0, 1.564e10), 
                                priors.UniformPrior(self.plx - 10*self.plx_err, self.pls + 10*self.plx_err)]
+        self.init_mass_prior = priors.UniformPrior(0.0, 5.65e9)
         # Set creation date
         if prev_creation_date is None:
             self.creation_date = str(datetime.datetime.now())
@@ -81,6 +82,6 @@ class System():
         hf.create_dataset('data', data=self.data_table)
         hf.attrs['plx'] = self.plx
         hf.attrs['plx_err'] = self.plx_err
-        for i in range(3):
-            hf.attrs[f"Prior({self.labels[i]})"] = str(self.priors[i])
+        #for i in range(3):
+        #    hf.attrs[f"Prior({self.labels[i]})"] = str(self.priors[i])
     

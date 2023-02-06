@@ -14,7 +14,7 @@ def _make_master_dfWD(filters):
         A DataFrame of the filters, age and mass
     """
     #
-    files = ['Models\Montreal_Models\Table_Mass_{:.1f}'.format(m) for m in np.arange(0.2, 1.2, 0.1)]
+    files = ['Models\Montreal_Models\Table_Mass_{:.1f}'.format(m) for m in np.arange(0.2, 1.4, 0.1)]
 
     mdf = pd.DataFrame()
 
@@ -77,18 +77,18 @@ def findMags(mdf, solar_m, age, parallax, filters):
     # Basic age range check and filter checks
     if (age < 0) or (age > 1.564e10):
         raise ValueError("Invalid value for age parameter")
-    if (not filters) or (not(set(filters) <= set(mdf.columns.tolist()))): #might have a problem with repeating filter measurements
-        raise ValueError("Filters array must be a subset of the filters in master dataframe")
+    #if (not filters) or (not(set(filters) <= set(mdf.columns.tolist()))): #might have a problem with repeating filter measurements
+    #    raise ValueError("Filters array must be a subset of the filters in master dataframe")
     
     # Make array to hold magnitudes. Elm 0 is are the interp values for the lowerbound; Elm 1 is the upper.
     mags = np.zeros((2,len(filters)))
     
     # Makes the bounds and ensures floats have one decimal (avoiding floating point errors)
     mbounds = (np.around(np.floor(10*solar_m)/10, decimals=1), np.around(np.floor(10*solar_m)/10 + 0.1, decimals=1))
-
+    print(mbounds)
     # Checks the solar mass range
-    if (mbounds[1] > 1.2) or (mbounds[0] < 0.2):
-        raise ValueError("Solar mass input creates invalid bounds")
+    if (mbounds[1] > 1.3) or (mbounds[0] < 0.2):
+        raise ValueError(r"Solar mass input creates invalid bounds: {} M$\odot$".format(solar_m))
     
     # Outer loop runs twice only
     for m in range(len(mbounds)):
@@ -98,9 +98,12 @@ def findMags(mdf, solar_m, age, parallax, filters):
         # For each filter, the upper and lower bounds of the dataframe is found with respect to the filter value
         for i in range(len(filters)):
             #print(filters[i])
-            f = interp1d(df["Age"], df[filters[i]])
-            # Add the magnitude in the bound array in the order of the filter array ie. elm 0 is filt 0's magnitude
-            mags[m][i] = f(age)
+            try:
+                f = interp1d(df["Age"], df[filters[i]])
+                # Add the magnitude in the bound array in the order of the filter array ie. elm 0 is filt 0's magnitude
+                mags[m][i] = f(age)
+            except ValueError:
+                print(r"Interpolation error: {} M$\odot$, {} yrs".format(solar_m, age))
     
     # Calculates the magnitude for the age given 
     fract = (solar_m - mbounds[0])/(mbounds[1]-mbounds[0])

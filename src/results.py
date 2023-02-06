@@ -56,7 +56,7 @@ class Results():
         hf = h5py.File(filename, 'w')  # Creates h5py file object
 
         # Add the system object
-        hf.create_dataset('system', data=self.system.save_format())
+        #hf.create_dataset('system', data=self.system.save_format(hf))
 
         # Now add post and lnlike from the results object as datasets
         hf.create_dataset('post', data=self.post)
@@ -66,8 +66,6 @@ class Results():
 
         if self.curr_pos is not None:
             hf.create_dataset("curr_pos", data=self.curr_pos)
-
-        self.system.save(hf)
 
         hf.close()  # Closes file object, which writes file to disk
     
