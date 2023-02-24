@@ -7,6 +7,7 @@ import src.priors as priors
 import src.results as results
 import src.system as sys
 import src.model as model
+import corner.corner as corner
 
 import matplotlib.pyplot as plt
 
@@ -249,11 +250,14 @@ class MCMCSampler():
         for pp in params_to_plot:
             fig, ax = plt.subplots()
             for ww in walkers_to_plot:
-                ax.plot(chn[ww, :, pp], 'k-', alpha = transparency)
+                ax.plot(chn[ww, :, pp], alpha = transparency)
+            ax.set_ylabel(self.system.labels[pp])
             ax.set_xlabel('Step')
             if step_range is not None:  # Limit range shown if step_range is set
                 ax.set_xlim(step_range)
             output_figs.append(fig)
+        figure = corner(flatchain, labels=self.system.labels)
+        output_figs.append(figure)
         return output_figs
 
     def chop_chains(self, burn, trim=0):

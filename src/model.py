@@ -131,7 +131,7 @@ def chi_squared(model, mags, errors):
     residual = (mags - model)
     sigma2 = errors**2
     chi2 = -0.5 * residual**2 / sigma2 - np.log(np.sqrt(2*np.pi*sigma2))
-    return chi2
+    return np.sum(chi2)
 
 
 
