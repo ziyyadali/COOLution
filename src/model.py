@@ -85,7 +85,7 @@ def findMags(mdf, solar_m, age, parallax, filters):
     
     # Makes the bounds and ensures floats have one decimal (avoiding floating point errors)
     mbounds = (np.around(np.floor(10*solar_m)/10, decimals=1), np.around(np.floor(10*solar_m)/10 + 0.1, decimals=1))
-    print(mbounds)
+    #print(mbounds)
     # Checks the solar mass range
     if (mbounds[1] > 1.3) or (mbounds[0] < 0.2):
         raise ValueError(r"Solar mass input creates invalid bounds: {} M$\odot$".format(solar_m))

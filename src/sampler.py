@@ -91,10 +91,10 @@ class MCMCSampler():
         filts = self.system.data_table["Filter"].to_list()
         data = self.system.data_table["App Mag"].to_numpy()
         errors = self.system.data_table["Errors"].to_numpy()
-        print(params, filts)
+        #print(params, filts)
 
         modelr = model.findMags(self.model_table, params[0], params[1], params[2], filts)
-        print(modelr)
+        #print(modelr)
         logl = model.chi_squared(modelr, data, errors)
         
         return logl + logp
