@@ -54,7 +54,7 @@ class MCMCSampler():
         for priorn in range(len(self.priors)):
             # Draw samples uniformly from each prior
             if priorn == 1:
-                rand_init = self.system.init_mass_prior.draw_samples(self.num_walkers * self.num_temps)
+                rand_init = self.system.init_age_prior.draw_samples(self.num_walkers * self.num_temps)
             else:
                 rand_init = self.priors[priorn].draw_samples(self.num_walkers * self.num_temps)
             if self.num_temps > 1:

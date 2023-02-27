@@ -52,7 +52,7 @@ class System():
             self.sys_priors = [priors.UniformPrior(0.2, 1.3), 
                                priors.UniformPrior(0, 1.564e10), 
                                priors.UniformPrior(self.plx - 10*self.plx_err, self.pls + 10*self.plx_err)]
-        self.init_mass_prior = priors.UniformPrior(0.0, 5.65e9) #TODO age
+        self.init_age_prior = priors.UniformPrior(0.0, 5.65e9) #TODO age
         # Set creation date
         if prev_creation_date is None:
             self.creation_date = str(datetime.datetime.now())

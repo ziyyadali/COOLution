@@ -104,6 +104,8 @@ def findMags(mdf, solar_m, age, parallax, filters):
                 mags[m][i] = f(age)
             except ValueError:
                 print(r"Interpolation error: {} M$\odot$, {} yrs".format(solar_m, age))
+                mags[:] = -99
+                return mags[0]
     
     # Calculates the magnitude for the age given 
     fract = (solar_m - mbounds[0])/(mbounds[1]-mbounds[0])
@@ -128,6 +130,11 @@ def chi_squared(model, mags, errors):
     Returns:
         - The chi-squared value of the magnutides in each filter
     """
+
+    if np.all(model==-99):
+        chi = np.zeros_like(model)
+        chi[:] = -np.inf
+        return chi
     residual = (mags - model)
     sigma2 = errors**2
     chi2 = -0.5 * residual**2 / sigma2 - np.log(np.sqrt(2*np.pi*sigma2))
