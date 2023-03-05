@@ -77,11 +77,7 @@ class GaussianPrior(Prior):
             float: log(probability) of param value.
         """
         lnprob = -0.5*np.log(2.*np.pi) - 0.5*np.log(self.sigma**2) - 0.5*((param - self.mu) / self.sigma)**2
-        #lnprob = -0.5*np.log(2.*np.pi*self.sigma) - 0.5*((param - self.mu) / self.sigma)**2
 
-        if self.no_negatives and (lnprob < 0):
-            return -np.inf
-        
         return lnprob
 
 
