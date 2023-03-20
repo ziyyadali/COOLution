@@ -79,9 +79,14 @@ class System():
             hf (h5py._hl.files.File): a currently open hdf5 file in which
                 to save the object.  
         """
-        hf.create_dataset('data', data=self.data_table)
+        filts = self.data_table["Filter"]
+        dt = self.data_table.drop(columns=["Filter"])
+        hf.create_dataset('data', data=dt)
+        hf.create_dataset('filters', data=filts)
         hf.attrs['plx'] = self.plx
         hf.attrs['plx_err'] = self.plx_err
+        hf.attrs['keyword'] = self.keyword
+        #TODO: add priors to results
         #for i in range(3):
         #    hf.attrs[f"Prior({self.labels[i]})"] = str(self.priors[i])
     

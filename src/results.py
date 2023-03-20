@@ -2,6 +2,7 @@ import numpy as np
 import h5py
 import os
 import src.system as system
+import pandas as pd
 
 class Results():
     """
@@ -79,32 +80,44 @@ class Results():
                     If False (default), new data overwrites existing object
             See the ``save_results()`` method in this module for information on how the
             data is structured.
-            Written: Henry Ngo, 2018
             """
-            
+            #TODO:remove this if later
             hf = h5py.File(filename, 'r')  # Opens file for reading
-            """
-            try:
-                data_table = table.Table(np.array(hf.get('data')))
-            except ValueError: # old version of results; add a dummy table
-                data_table = table.Table(
-                    names = (
-                        'epoch', 'object', 'quant1', 'quant1_err', 'quant2', 
-                        'quant2_err', 'quant12_corr', 'quant_type', 'instrument'
-                    ),
-                    dtype=('<f8', '<i8', '<f8', '<f8', '<f8', '<f8', '<f8', 'S5', 'S5')
-                )
-            """
-            # Make system object
-            #self.system = system.System(data, plx, plxerr, keyword)            
+            post = np.array(hf.get("post"))    
+
             try:
                 curr_pos = np.array(hf.get('curr_pos'))
                 lnlike = np.array(hf.get("lnlike"))
-                post = np.array(hf.get("post"))
             except KeyError:
                 curr_pos = None
                 lnlike = None
-                post = None
+
+            hf.close()  # Closes file object
+
+            self.curr_pos = curr_pos
+            self.lnlike = lnlike
+            self.post = post
+
+            """
+            hf = h5py.File(filename, 'r')  # Opens file for reading
+            data_table = pd.DataFrame(hf.get('data'))
+            filts = np.array(hf.get('filters'), dtype='S').astype("str")
+            data_table.columns = ["App Mag", "Errors"]
+            data_table["Filter"] = filts
+            plx = hf.attrs["plx"]
+            plx_err = hf.attrs["plx_err"]
+            keyword = hf.attrs["keyword"]
+
+            # Make system object
+            self.system = system.System(data_table, plx, plx_err, keyword=keyword)   
+            post = np.array(hf.get("post"))    
+
+            try:
+                curr_pos = np.array(hf.get('curr_pos'))
+                lnlike = np.array(hf.get("lnlike"))
+            except KeyError:
+                curr_pos = None
+                lnlike = None
 
             hf.close()  # Closes file object
 
@@ -115,5 +128,6 @@ class Results():
             else:
                 raise Exception(
                     'Unable to load file {} to Results object. Error reading data'.format(filename))
+            """
 
             

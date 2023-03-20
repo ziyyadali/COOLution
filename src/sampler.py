@@ -239,10 +239,10 @@ class MCMCSampler():
         else:  # build list from user input strings
             params_plot_list = []
             for i in param_list:
-                if i in self.system.basis.param_idx:
-                    params_plot_list.append(self.system.basis.param_idx[i])
+                if i in self.system.labels:
+                    params_plot_list.append(self.system.labels[i])
                 else:
-                    raise Exception('Invalid param name: {}. See system.basis.param_idx.'.format(i))
+                    raise Exception('Invalid param name: {}. See system.labels.'.format(i))
             params_to_plot = np.array(params_plot_list)
 
         # Loop through each parameter and make plot
@@ -270,10 +270,7 @@ class MCMCSampler():
             trim (int): The number of steps to remove from the end of the chians (optional)
         .. Warning:: Does not update bookkeeping arrays within `MCMC` sampler object.
         (written): Henry Ngo, 2019
-        TODO: Compare to ours which stores a file, which might be something we want
         """
-        raise NotImplementedError("function not yet adapted")
-
         # Retrieve information from results object
         flatchain = np.copy(self.results.post)
         total_samples, n_params = flatchain.shape
@@ -304,15 +301,12 @@ class MCMCSampler():
 
         # Update results object associated with this sampler
         # TODO: change to our results
-        self.results = orbitize.results.Results(
+        self.results = results.Results(
             self.system, 
-            sampler_name=self.__class__.__name__,
             post=flat_chopped_chain,
             lnlike=flat_chopped_lnlikes,
-            version_number = orbitize.__version__,
             curr_pos = self.curr_pos
         )
-        #TODO: results.savefile()
 
         # Print a confirmation
         print('Chains successfully chopped. Results object updated.')
