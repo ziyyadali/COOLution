@@ -256,7 +256,7 @@ class MCMCSampler():
             if step_range is not None:  # Limit range shown if step_range is set
                 ax.set_xlim(step_range)
             output_figs.append(fig)
-        figure = corner(flatchain, labels=self.system.labels)
+        figure = corner(flatchain, labels=self.system.labels, quantiles=[0.16,0.5,0.84], show_titles=True)
         output_figs.append(figure)
         return output_figs
 
